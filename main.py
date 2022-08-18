@@ -1,5 +1,4 @@
 from flask import Flask
-from werkzeug.exceptions import BadRequest
 from routes import configure_routes
 
 UPLOAD_FOLDER = 'static/images'
