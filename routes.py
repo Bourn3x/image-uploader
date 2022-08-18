@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, send_from_directory
 import os
 from werkzeug.utils import secure_filename
 
@@ -57,11 +57,12 @@ def configure_routes(app):
 
     if file:
       image_id = save_file(app, file, file_extension)
-      return f"{request.base_url}/{image_id}"
+      return f"{request.base_url}/{image_id}.{file_extension}"
 
     else:
       return "Something went wrong", 400
 
-  @app.route("/images/<int:image_id>", methods=["GET"])
+  @app.route("/upload/<image_id>", methods=["GET"])
   def get_image(image_id):
-    return f'Image {image_id}'
+    print(app.config["UPLOAD_FOLDER"])
+    return send_from_directory(app.config["UPLOAD_FOLDER"], image_id)
