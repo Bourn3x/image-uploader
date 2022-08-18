@@ -1,8 +1,9 @@
 from flask import request, send_from_directory
 import os
 from werkzeug.utils import secure_filename
+from zipfile import ZipFile
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'zip'}
 
 def configure_routes(app):
   def allowed_file(filename):
@@ -35,6 +36,23 @@ def configure_routes(app):
     
     return image_id
 
+  def extract_zip_file(file):
+    output_list_of_urls = []
+
+    with ZipFile(file, "r") as zip_obj:
+      list_of_files = zip_obj.infolist()
+      for f in list_of_files:
+        file_extension = allowed_file(f.filename)
+        if file_extension:
+          image_id = get_counter()
+          f.filename = f"{image_id}.{file_extension}"
+
+          zip_obj.extract(f, 'static/images')
+          output_list_of_urls.append(f"{request.base_url}/{image_id}.{file_extension}")
+
+          increment_counter(image_id)
+    return output_list_of_urls, 200
+
   @app.route('/')
   def index():
     return 'App Running'
@@ -56,8 +74,12 @@ def configure_routes(app):
       return "File is not an image", 400
 
     if file:
-      image_id = save_file(app, file, file_extension)
-      return f"{request.base_url}/{image_id}.{file_extension}"
+      output = []
+      if file_extension == "zip":
+        return extract_zip_file(file)
+      else:
+        image_id = save_file(app, file, file_extension)
+        return f"{request.base_url}/{image_id}.{file_extension}"
 
     else:
       return "Something went wrong", 400
