@@ -128,8 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# static web images
-/static
-
 # counter file
 counter.txt
